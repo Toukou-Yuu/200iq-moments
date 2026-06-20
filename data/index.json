@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "id": "001",
+      "slug": "airport-subscription",
+      "title": "买限时机场套餐以为不限时",
+      "date": "2025-06-20",
+      "status": "published",
+      "loss": {
+        "amount": 19.9,
+        "currency": "CNY",
+        "types": [
+          "money",
+          "dignity"
+        ],
+        "description": "金钱 + 尊严"
+      },
+      "tags": [
+        "subscription",
+        "consumption"
+      ],
+      "updated_at": "2025-06-20T12:00:00+08:00"
+    }
+  ],
+  "total": 1,
+  "updated_at": "2026-06-20T23:27:06.955065+08:00"
+}
