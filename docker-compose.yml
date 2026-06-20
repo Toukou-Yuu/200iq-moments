@@ -1,0 +1,9 @@
+services:
+  200iq-api:
+    build: .
+    ports:
+      - "127.0.0.1:8200:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - AUTH_ENABLED=false

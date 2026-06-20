@@ -1,0 +1,10 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+*.egg-info
+.venv
+.env
+tests
+docs
+200iq-moments-api-task-spec.md
