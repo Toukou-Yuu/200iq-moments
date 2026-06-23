@@ -136,6 +136,11 @@ sort=date_desc|date_asc|created_desc|updated_desc
 
 导出 Case Markdown。
 
+### GET `/v1/export/documents`
+
+导出符合 retrieval-api document contract 的案例文档。`status` 支持
+`draft`、`published`、`archived`、`deleted` 和 `all`。
+
 ## Stats
 
 ### GET `/v1/stats/summary`
@@ -148,18 +153,26 @@ sort=date_desc|date_asc|created_desc|updated_desc
 
 ## Index
 
-### POST `/v1/index/sync`
+### POST `/v1/index/sync/{case_id}`
 
-按更新时间返回案例变更事件。
-
-请求：
-
-```json
-{
-  "since": "2025-01-01T00:00:00+08:00"
-}
-```
+为单个 Case 创建 retrieval 同步任务。
 
 ### POST `/v1/index/rebuild`
 
-返回可用于重建索引的案例文本和元数据。
+创建 retrieval collection 的全量重建任务。
+
+### GET `/v1/index/jobs`
+
+查询同步任务。
+
+### GET `/v1/index/jobs/{job_id}`
+
+查询单个同步任务。
+
+### POST `/v1/index/jobs/{job_id}/retry`
+
+重新调度一个同步任务。
+
+### GET `/v1/index/status`
+
+返回同步队列统计和最近成功时间。

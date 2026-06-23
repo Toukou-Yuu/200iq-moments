@@ -1,9 +1,35 @@
 services:
   200iq-api:
     build: .
+    container_name: 200iq-api
     ports:
       - "127.0.0.1:8200:8000"
     volumes:
       - ./data:/app/data
     environment:
       - AUTH_ENABLED=false
+      - SYNC_ENABLED=true
+      - RETRIEVAL_API_URL=http://retrieval-api:8000
+      - RETRIEVAL_COLLECTION=200iq_cases
+    networks:
+      - agent-services
+    restart: unless-stopped
+
+  200iq-sync-worker:
+    build: .
+    container_name: 200iq-sync-worker
+    command: ["python", "-m", "app.workers.sync_worker"]
+    volumes:
+      - ./data:/app/data
+    environment:
+      - SYNC_ENABLED=true
+      - RETRIEVAL_API_URL=http://retrieval-api:8000
+      - RETRIEVAL_COLLECTION=200iq_cases
+    networks:
+      - agent-services
+    restart: unless-stopped
+
+networks:
+  agent-services:
+    external: true
+    name: agent-services

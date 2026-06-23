@@ -14,6 +14,14 @@
 
 All services join the `agent-services` Docker network. No service exposes an inter-service API through a host port.
 
+Create the external network before starting either Compose project:
+
+```bash
+docker network create agent-services
+```
+
+The 200iq API and `200iq-sync-worker` share the 200iq `data/` volume. The worker is the only component that calls retrieval-api.
+
 ## Collection
 
 200iq uses the `200iq_cases` collection.

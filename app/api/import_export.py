@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends
 
 from app.models import CaseStatus
 from app.repositories.case_repository import CaseRepository
+from app.services.retrieval_document_mapper import RETRIEVAL_COLLECTION, map_case_to_document
+from app.services.sync_service import SyncService
 
-from .deps import get_case_repository
+from .deps import get_case_repository, get_sync_service
 
 router = APIRouter(tags=["import-export"])
 
@@ -14,6 +16,7 @@ router = APIRouter(tags=["import-export"])
 def import_markdown(
     payload: dict,
     repo: Annotated[CaseRepository, Depends(get_case_repository)],
+    sync: Annotated[SyncService, Depends(get_sync_service)],
 ) -> dict[str, object]:
     record, created, updated, warnings = repo.import_markdown(
         payload.get("content", ""),
@@ -25,6 +28,10 @@ def import_markdown(
         "updated": updated,
         "case_id": record.id,
         "warnings": warnings,
+        "index_sync": sync.enqueue_case(
+            record,
+            "delete" if record.status == CaseStatus.DELETED else "upsert",
+        ),
     }
 
 
@@ -58,4 +65,22 @@ def export_markdown(
             }
             for case in cases
         ]
+    }
+
+
+@router.get("/export/documents")
+def export_documents(
+    repo: Annotated[CaseRepository, Depends(get_case_repository)],
+    status: str = "all",
+) -> dict[str, object]:
+    if status == "all":
+        cases = repo.list_all_cases()
+    else:
+        try:
+            cases = repo.list_cases(status=CaseStatus(status))
+        except ValueError:
+            return {"error": "status must be draft, published, archived, deleted, or all"}
+    return {
+        "collection": RETRIEVAL_COLLECTION,
+        "documents": [map_case_to_document(case) for case in cases],
     }

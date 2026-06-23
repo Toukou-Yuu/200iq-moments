@@ -1,14 +1,22 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.deps import get_case_repository
+from app.api.deps import get_case_repository, get_sync_service
+from app.config import Settings
 from app.main import app
 from app.repositories.case_repository import CaseRepository
+from app.repositories.sync_job_repository import SyncJobRepository
+from app.services.sync_service import SyncService
 
 
 @pytest.fixture
 def client(tmp_path):
     app.dependency_overrides[get_case_repository] = lambda: CaseRepository(tmp_path)
+    settings = Settings(data_dir=tmp_path)
+    app.dependency_overrides[get_sync_service] = lambda: SyncService(
+        SyncJobRepository(settings.sync_db_path),
+        settings,
+    )
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
@@ -66,6 +74,7 @@ def test_case_crud_flow(client):
     created = client.post("/v1/cases", json=sample_case())
     assert created.status_code == 200
     assert created.json()["case_id"] == "001"
+    assert created.json()["index_sync"]["status"] == "pending"
 
     got = client.get("/v1/cases/001")
     assert got.status_code == 200
@@ -78,6 +87,7 @@ def test_case_crud_flow(client):
     patched = client.patch("/v1/cases/001", json={"tags": ["subscription", "traffic"]})
     assert patched.status_code == 200
     assert patched.json()["updated_fields"] == ["tags"]
+    assert patched.json()["index_sync"]["status"] == "pending"
 
     markdown = client.get("/v1/cases/001/markdown")
     assert markdown.status_code == 200
@@ -86,3 +96,4 @@ def test_case_crud_flow(client):
     deleted = client.delete("/v1/cases/001")
     assert deleted.status_code == 200
     assert deleted.json()["status"] == "archived"
+    assert deleted.json()["index_sync"]["status"] == "pending"

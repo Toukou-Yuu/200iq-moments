@@ -91,9 +91,14 @@ class CaseRepository:
     def update_case(self, case_id: str, patch: CaseUpdate) -> tuple[CaseRecord, list[str]]:
         current = self.get_case(case_id)
         update_data = patch.model_dump(exclude_unset=True)
-        updated_fields = list(update_data.keys())
+        current_data = current.model_dump()
+        updated_fields = [
+            field for field, value in update_data.items() if current_data[field] != value
+        ]
+        if not updated_fields:
+            return current, []
         merged = current.model_dump()
-        merged.update(update_data)
+        merged.update({field: update_data[field] for field in updated_fields})
         merged["updated_at"] = datetime.now().astimezone()
         if "title" in update_data:
             merged["slug"] = slugify(update_data["title"])
@@ -140,6 +145,9 @@ class CaseRepository:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.index_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         return items
+
+    def list_all_cases(self) -> list[CaseRecord]:
+        return sort_cases(self._read_all_cases(), "date_desc")
 
     def next_id(self) -> str:
         max_id = 0

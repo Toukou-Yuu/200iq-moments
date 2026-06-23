@@ -1,14 +1,22 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.deps import get_case_repository
+from app.api.deps import get_case_repository, get_sync_service
+from app.config import Settings
 from app.main import app
 from app.repositories.case_repository import CaseRepository
+from app.repositories.sync_job_repository import SyncJobRepository
+from app.services.sync_service import SyncService
 
 
 @pytest.fixture
 def client(tmp_path):
     app.dependency_overrides[get_case_repository] = lambda: CaseRepository(tmp_path)
+    settings = Settings(data_dir=tmp_path)
+    app.dependency_overrides[get_sync_service] = lambda: SyncService(
+        SyncJobRepository(settings.sync_db_path),
+        settings,
+    )
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

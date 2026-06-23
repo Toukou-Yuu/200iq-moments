@@ -31,6 +31,11 @@ class SyncService:
                 "documents": [map_case_to_document(case)],
                 "indexing": {"mode": "sync"},
             }
+        else:
+            payload = {
+                "status": case.status.value,
+                "updated_at": case.updated_at.isoformat(),
+            }
         return self._enqueue(
             action=action,
             case_id=case.id,
