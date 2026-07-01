@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from app.models import CaseCreate, CaseUpdate
 from app.repositories.case_repository import CaseRepository

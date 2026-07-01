@@ -15,6 +15,33 @@ services:
       - agent-services
     restart: unless-stopped
 
+  200iq-mcp:
+    build: .
+    container_name: 200iq-mcp
+    command: ["200iq-moments", "mcp-http", "--host", "0.0.0.0", "--port", "8201", "--path", "/mcp"]
+    ports:
+      - "127.0.0.1:8201:8201"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - AUTH_ENABLED=false
+      - SYNC_ENABLED=true
+      - RETRIEVAL_API_URL=http://retrieval-api:8000
+      - RETRIEVAL_COLLECTION=200iq_cases
+    depends_on:
+      200iq-api:
+        condition: service_started
+    networks:
+      - agent-services
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1', 8201), timeout=3); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
   200iq-sync-worker:
     build: .
     container_name: 200iq-sync-worker

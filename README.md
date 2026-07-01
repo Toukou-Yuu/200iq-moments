@@ -68,3 +68,30 @@ A：理论上有用。实践上请持续关注本仓库更新频率。
 ---
 
 *"知错能改，善莫大焉。知错不改，本仓库因此存在。"*
+
+## MCP tools
+
+`200iq-moments` provides first-class MCP tools for Alice/Hermes in addition to the REST API.
+
+```bash
+uv run 200iq-moments mcp
+uv run 200iq-moments mcp-http --host 127.0.0.1 --port 8201 --path /mcp
+```
+
+Production deployment uses the same image as the REST API with a separate `200iq-moments-mcp` sidecar. See [docs/mcp.md](docs/mcp.md) for Hermes configuration, tool inventory, permissions, side effects, and tests.
+
+Tool names:
+
+```text
+case_get_template
+case_validate
+case_preview
+case_create
+case_update
+case_search
+case_get
+case_archive
+case_sync_index
+case_rebuild_index
+case_stats
+```
